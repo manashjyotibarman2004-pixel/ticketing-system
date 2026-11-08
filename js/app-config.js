@@ -1,0 +1,5 @@
+export const EVENT_NAME = "Lucky Draw 2026";
+export const TICKET_PREFIX = "LD26-";
+export const TICKET_PRICE = 100;
+// Change to your deployed HTTPS website URL after publishing.
+export const PUBLIC_BASE_URL = location.origin + location.pathname.replace(/[^/]*$/, "");
