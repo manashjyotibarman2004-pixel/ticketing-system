@@ -1,0 +1,2 @@
+import {supabase,$} from "./client.js";
+$("requestForm").addEventListener("submit",async e=>{e.preventDefault();const p={p_name:$("name").value.trim(),p_contact:$("email").value.trim(),p_phone:$("phone").value.trim(),p_quantity:Number($("quantity").value)};const {data,error}=await supabase.rpc("create_booking_request",p);$("requestMsg").textContent=error?error.message:`Request received. Reference: ${data}. The organiser will confirm payment and assign ticket numbers.`;if(!error)e.target.reset()});
