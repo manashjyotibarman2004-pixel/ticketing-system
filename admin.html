@@ -1,1 +1,265 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ticket Admin</title><link rel="stylesheet" href="style.css"></head><body><main class="wrap"><header><h1>Ticket Manager</h1><a href="index.html">Booking page</a></header><section class="card" id="loginCard"><h2>Admin login</h2><form id="loginForm"><label>Email<input id="loginEmail" type="email" required></label><label>Password<input id="loginPassword" type="password" required></label><button>Sign in</button></form><p id="loginMsg"></p></section><div id="adminArea" hidden><section class="card"><div class="row"><h2>Ticket inventory</h2><button id="refresh" class="secondary">Refresh inventory</button></div><div id="stats" class="stats"></div><p class="muted">Green = available; blue = issued; red = redeemed; grey = cancelled. Only green tickets can be selected.</p><div class="filters"><label>Search serial<input id="searchSerial" placeholder="e.g. 1321"></label><label>Status<select id="statusFilter"><option value="available">Available</option><option value="all">All</option><option value="issued">Issued</option><option value="redeemed">Redeemed</option><option value="cancelled">Cancelled</option></select></label></div><div id="grid" class="grid"></div><p id="selectedCount" class="muted">0 selected</p></section><section class="card"><h2>Issue selected tickets</h2><form id="issueForm"><label>Buyer name<input id="buyerName" required></label><label>Buyer email / contact<input id="buyerEmail" required></label><label>WhatsApp number<input id="buyerPhone"></label><div class="row"><label>Payment method<select id="paymentMethod"><option>Cash</option><option>Online</option></select></label><label>Amount received (₹)<input id="amount" type="number" min="0" step="1"></label></div><label>Payment note<textarea id="paymentNote" rows="2" placeholder="Cash received / UPI reference / other note"></textarea></label><button id="issueBtn">Issue & generate PDFs</button></form><p id="issueMsg"></p><div id="issuedFiles"></div></section><section class="card"><h2>Redeem a ticket</h2><label>QR token<input id="redeemToken" placeholder="Paste scanned ticket token"></label><button id="redeemBtn" class="secondary">Redeem ticket</button><p id="redeemMsg"></p></section><section class="card"><h2>Master register</h2><button id="export" class="secondary">Export CSV</button><div id="register"></div></section><button id="logout" class="secondary">Sign out</button></div></main><script type="module" src="js/admin.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ticket Admin</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">T</div>
+          <div>
+            <strong>TicketFlow</strong>
+            <small>Admin Console</small>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Sidebar navigation">
+          <a class="active" href="#">
+            <span class="nav-icon">⌂</span>
+            Overview
+          </a>
+          <a href="#">
+            <span class="nav-icon">▣</span>
+            Tickets
+          </a>
+          <a href="#">
+            <span class="nav-icon">◎</span>
+            Customers
+          </a>
+          <a href="#">
+            <span class="nav-icon">◫</span>
+            Agents
+          </a>
+          <a href="#">
+            <span class="nav-icon">◌</span>
+            Reports
+          </a>
+          <a href="#">
+            <span class="nav-icon">⚙</span>
+            Settings
+          </a>
+        </nav>
+
+        <div class="sidebar-card">
+          <p class="eyebrow">Service Health</p>
+          <h3>98.4%</h3>
+          <div class="sparkline" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <small>Uptime this month</small>
+        </div>
+      </aside>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div class="search-box" aria-label="Search">
+            <span class="search-icon">⌕</span>
+            <input type="text" value="Search tickets, customers..." aria-label="Search tickets" />
+          </div>
+
+          <div class="topbar-actions">
+            <button class="icon-button" aria-label="Notifications">🔔</button>
+            <div class="user-pill">
+              <div class="avatar">AD</div>
+              <div>
+                <strong>Amelia Doe</strong>
+                <small>Operations Lead</small>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section class="hero">
+          <div>
+            <p class="eyebrow">Operations dashboard</p>
+            <h1>Welcome back, Amelia.</h1>
+          </div>
+          <button class="primary-btn">+ New Ticket</button>
+        </section>
+
+        <section class="stats-grid" aria-label="Key metrics">
+          <article class="stat-card">
+            <div class="stat-label">
+              <span>Open Tickets</span>
+              <span class="change positive">+12.4%</span>
+            </div>
+            <div class="stat-value">184</div>
+            <div class="stat-meta">Across 9 teams</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-label">
+              <span>Resolved</span>
+              <span class="change positive">+8.1%</span>
+            </div>
+            <div class="stat-value">1,328</div>
+            <div class="stat-meta">This month</div>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-label">
+              <span>Avg. Response</span>
+              <span class="change neutral">-4m</span>
+            </div>
+            <div class="stat-value">28m</div>
+            <div class="stat-meta">Faster than target</div>
+          </article>
+
+          <article class="stat-card accent">
+            <div class="stat-label">
+              <span>SLA Risk</span>
+              <span class="change warning">6 alerts</span>
+            </div>
+            <div class="stat-value">12%</div>
+            <div class="stat-meta">Requires review</div>
+          </article>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel large-panel">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Queue</p>
+                <h2>Live Ticket Queue</h2>
+              </div>
+              <select aria-label="Ticket status filter">
+                <option>All priority</option>
+                <option>High priority</option>
+                <option>Medium priority</option>
+                <option>Low priority</option>
+              </select>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ticket</th>
+                    <th>Customer</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>#TCK-2041</td>
+                    <td>Olivia Carter</td>
+                    <td>Finance</td>
+                    <td><span class="status in-progress">In progress</span></td>
+                    <td><span class="priority high">High</span></td>
+                    <td>2 mins ago</td>
+                  </tr>
+                  <tr>
+                    <td>#TCK-1987</td>
+                    <td>Daniel Lewis</td>
+                    <td>HR</td>
+                    <td><span class="status waiting">Waiting</span></td>
+                    <td><span class="priority medium">Medium</span></td>
+                    <td>11 mins ago</td>
+                  </tr>
+                  <tr>
+                    <td>#TCK-1902</td>
+                    <td>Emma Brooks</td>
+                    <td>Support</td>
+                    <td><span class="status resolved">Resolved</span></td>
+                    <td><span class="priority low">Low</span></td>
+                    <td>1 hour ago</td>
+                  </tr>
+                  <tr>
+                    <td>#TCK-1855</td>
+                    <td>Lucas Reed</td>
+                    <td>IT</td>
+                    <td><span class="status review">Review</span></td>
+                    <td><span class="priority high">High</span></td>
+                    <td>3 hours ago</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header compact">
+              <div>
+                <p class="eyebrow">Breakdown</p>
+                <h2>Priority Split</h2>
+              </div>
+            </div>
+
+            <div class="ring-wrap">
+              <div class="ring-chart">
+                <div class="ring-center">
+                  <strong>64%</strong>
+                  <small>High</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="legend">
+              <div><span class="dot red"></span>High priority <strong>64%</strong></div>
+              <div><span class="dot amber"></span>Medium <strong>26%</strong></div>
+              <div><span class="dot green"></span>Low <strong>10%</strong></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="bottom-grid">
+          <article class="panel">
+            <div class="panel-header compact">
+              <div>
+                <p class="eyebrow">Activity</p>
+                <h2>Team Activity</h2>
+              </div>
+            </div>
+
+            <ul class="activity-list">
+              <li>
+                <div class="activity-dot blue"></div>
+                <div>
+                  <strong>Jordan added a note</strong>
+                  <small>Ticket #TCK-2041 · 8 minutes ago</small>
+                </div>
+              </li>
+              <li>
+                <div class="activity-dot green"></div>
+                <div>
+                  <strong>Resolved escalation</strong>
+                  <small>Ticket #TCK-1902 · 1 hour ago</small>
+                </div>
+              </li>
+              <li>
+                <div class="activity-dot amber"></div>
+                <div>
+                  <strong>New ticket assigned</strong>
+                  <small>Ticket #TCK-1987 · 2 hours ago</small>
+                </div>
+              </li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header compact">
+              <div>
+                <p class="eyebrow">Actions</p>
+                <h2>Quick Tasks</h2>
+              </div>
+            </div>
+
+            <div class="quick-actions">
+              <button>Assign team</button>
+              <button>Review SLA</button>
+              <button>Export report</button>
+              <button>Escalate issue</button>
+            </div>
+          </article>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
